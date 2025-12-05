@@ -16,7 +16,7 @@ CREATE TABLE users (
 
 CREATE TABLE guests (
   id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL references users(id),
+  user_id INT NOT NULL references users(id) ON DELETE CASCADE,
   guest_name TEXT NOT NULL
 );
 
