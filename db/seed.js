@@ -12,7 +12,7 @@ await db.end();
 console.log("🌱 Database seeded.");
 
 async function seed() {
-  // ---- Users ----
+  // ---- USERS ----
   const users = [
     {
       first_name: "Kara",
@@ -55,12 +55,22 @@ async function seed() {
     const user = await createUser(u);
     console.log("User created:", user.username);
 
+    // ---- BILL TYPES ----
     const billTypes = ["even", "per item", "percentage"];
 
     for (const type of billTypes) {
-      // ---- Guests ----
+      // ---- GUESTS ----
       const guests = [];
-      for (let i = 1; i <= 4; i++) {
+
+      // Make user a guest
+      const userGuest = await createGuest({
+        user_id: user.id,
+        guest_name: `${user.first_name}_Self`,
+      });
+      guests.push(userGuest);
+
+      // Add 3 more guests
+      for (let i = 1; i <= 3; i++) {
         const guest = await createGuest({
           user_id: user.id,
           guest_name: `${user.first_name}_Guest${i}`,
@@ -68,10 +78,10 @@ async function seed() {
         guests.push(guest);
       }
 
-      // ---- Create Bill ----
-      const total = 100 + Math.floor(Math.random() * 200); // total bill amount
+      // ---- CREATE BILL (owned by user) ----
+      const total = parseFloat((100 + Math.random() * 200).toFixed(2));
       const bill = await createBill({
-        guest_id: guests[0].id,
+        guest_id: userGuest.id, // user as bill owner (guest_id field)
         ref_num: Math.floor(Math.random() * 100000),
         receipt: null,
         type,
@@ -81,13 +91,13 @@ async function seed() {
 
       console.log(`Bill created for user ${user.username} with type ${type}`);
 
-      // ---- Items ----
+      // ---- ITEMS ----
       const guestItemTotals = {};
       for (const guest of guests) {
         guestItemTotals[guest.id] = 0;
         for (let j = 1; j <= 3; j++) {
-          const price = 5 + Math.floor(Math.random() * 21); // price 5-25
-          const quantity = 1 + Math.floor(Math.random() * 3); // quantity 1-3
+          const price = parseFloat((5 + Math.random() * 20).toFixed(2));
+          const quantity = 1 + Math.floor(Math.random() * 3);
 
           const item = await createItem({
             bill_id: bill.id,
@@ -106,9 +116,9 @@ async function seed() {
         }
       }
 
-      // ---- Split Expenses ----
+      // ---- SPLIT EXPENSES ----
       if (type === "even") {
-        const amountPerGuest = total / guests.length;
+        const amountPerGuest = parseFloat((total / guests.length).toFixed(2));
         for (const guest of guests) {
           await createSplitExpense({
             bill_id: bill.id,
@@ -121,23 +131,18 @@ async function seed() {
           await createSplitExpense({
             bill_id: bill.id,
             guest_id: guest.id,
-            amount_owed: guestItemTotals[guest.id],
+            amount_owed: parseFloat(guestItemTotals[guest.id].toFixed(2)),
           });
         }
       } else if (type === "percentage") {
-        // simple weights
-        let weights = [];
-        for (let i = 0; i < guests.length; i++) {
-          weights.push(Math.random());
-        }
-        let totalWeight = 0;
-        for (let w of weights) {
-          totalWeight += w;
-        }
+        const weights = guests.map(() => Math.random());
+        const totalWeight = weights.reduce((acc, w) => acc + w, 0);
 
         for (let i = 0; i < guests.length; i++) {
           const guest = guests[i];
-          const amount = (weights[i] / totalWeight) * total;
+          const amount = parseFloat(
+            ((weights[i] / totalWeight) * total).toFixed(2)
+          );
           await createSplitExpense({
             bill_id: bill.id,
             guest_id: guest.id,
