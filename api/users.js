@@ -1,12 +1,11 @@
 import express from "express";
-const router = express.Router();
-export default router;
-
 import { createUser, getUserByUsernameAndPassword } from "#db/queries/users";
 import requireBody from "#middleware/requireBody";
 import { createToken } from "#utils/jwt";
 
-router
+const usersRouter = express.Router();
+
+usersRouter
   .route("/register")
   .post(requireBody(["username", "password"]), async (req, res) => {
     const { username, password } = req.body;
@@ -16,7 +15,7 @@ router
     res.status(201).send(token);
   });
 
-router
+usersRouter
   .route("/login")
   .post(requireBody(["username", "password"]), async (req, res) => {
     const { username, password } = req.body;
@@ -26,3 +25,5 @@ router
     const token = await createToken({ id: user.id });
     res.send(token);
   });
+
+export default usersRouter;
