@@ -2,18 +2,33 @@ import express from "express";
 import { createUser, getUserByUsernameAndPassword } from "#db/queries/users";
 import requireBody from "#middleware/requireBody";
 import { createToken } from "#utils/jwt";
+import { TokenExpiredError } from "jsonwebtoken";
 
 const usersRouter = express.Router();
 
 usersRouter
   .route("/register")
-  .post(requireBody(["username", "password"]), async (req, res) => {
-    const { username, password } = req.body;
-    const user = await createUser(username, password);
+  .post(
+    requireBody(["username", "password", "first_name", "last_name", "email"]),
+    async (req, res) => {
+      try {
+        const { username, password, first_name, last_name, email } = req.body;
+        const user = await createUser({
+          username,
+          password,
+          first_name,
+          last_name,
+          email,
+        });
 
-    const token = await createToken({ id: user.id });
-    res.status(201).send(token);
-  });
+        const token = await createToken({ id: user.id });
+        res.status(201).send(token);
+      } catch (error) {
+        console.error(error);
+        res.status(400).send({ error: error.meessage });
+      }
+    }
+  );
 
 usersRouter
   .route("/login")
