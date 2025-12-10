@@ -1,12 +1,11 @@
 import express from "express";
-const app = express();
-export default app;
-
-import usersRouter from "#api/users";
 import getUserFromToken from "#middleware/getUserFromToken";
+import usersRouter from "#api/users";
 import handlePostgresErrors from "#middleware/handlePostgresErrors";
 import cors from "cors";
 import morgan from "morgan";
+
+const app = express();
 
 app.use(cors({ origin: process.env.CORS_ORIGIN ?? /localhost/ }));
 
@@ -26,3 +25,5 @@ app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).send("Sorry! Something went wrong.");
 });
+
+export default app;
