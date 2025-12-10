@@ -25,7 +25,7 @@ usersRouter
         res.status(201).send(token);
       } catch (error) {
         console.error(error);
-        res.status(400).send({ error: error.meessage });
+        res.status(400).send({ error: error.message });
       }
     }
   );
