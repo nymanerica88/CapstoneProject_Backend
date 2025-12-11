@@ -2,7 +2,10 @@ import express from "express";
 import { createUser, getUserByUsernameAndPassword } from "#db/queries/users";
 import requireBody from "#middleware/requireBody";
 import { createToken } from "#utils/jwt";
-import { TokenExpiredError } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+const { TokenExpiredError } = jwt;
+
+// // import { TokenExpiredError } from "jsonwebtoken";
 
 const usersRouter = express.Router();
 
