@@ -21,6 +21,14 @@ export async function createUser({
     const {
       rows: [user],
     } = await db.query(sql, values);
+    const newGuestSql = `
+    INSERT INTO guests (user_id, guest_name)
+    VALUES ($1, $2)
+    RETURNING *
+    `;
+    const newGuestValues = [user.id, `${first_name} ${last_name}`];
+    await db.query(newGuestSql, newGuestValues);
+
     return user;
   } catch (error) {
     console.error(`Error creating user`, error);
