@@ -25,7 +25,7 @@ export async function getBillsForGuest(guest_id) {
     FROM split_expenses
     JOIN bills ON split_expenses.bill_id = bills.id
     WHERE split_expenses.guest_id = $1
-    ORDER BY bills.id;
+    ORDER BY bills.id
     `;
     const values = [guest_id];
     const {
@@ -33,7 +33,7 @@ export async function getBillsForGuest(guest_id) {
     } = await db.query(sql, values);
     return guestBills;
   } catch (error) {
-    console.error(`Error fetching bills for guest ${guest_id_id}`, error);
+    console.error(`Error fetching bills for guest ${guest_id}`, error);
     throw error;
   }
 }
