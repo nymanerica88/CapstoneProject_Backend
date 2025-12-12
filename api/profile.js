@@ -26,3 +26,5 @@ profileRouter.get("/:guest_id", async (req, res, next) => {
     next(error);
   }
 });
+
+export default profileRouter;
