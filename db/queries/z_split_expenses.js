@@ -17,3 +17,23 @@ export async function createSplitExpense({ bill_id, guest_id, amount_owed }) {
     throw error;
   }
 }
+
+export async function getBillsForGuest(guest_id) {
+  try {
+    const sql = `
+    SELECT bills.id AS bill_id, bills.ref_num, bills.total, bills.type, bills.is_paid, split_expenses.amount_owed 
+    FROM split_expenses
+    JOIN bills ON split_expenses.bill_id = bills.id
+    WHERE split_expenses.guest_id = $1
+    ORDER BY bills.id;
+    `;
+    const values = [guest_id];
+    const {
+      rows: [guestBills],
+    } = await db.query(sql, values);
+    return guestBills;
+  } catch (error) {
+    console.error(`Error fetching bills for guest ${guest_id_id}`, error);
+    throw error;
+  }
+}
