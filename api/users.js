@@ -56,6 +56,8 @@ usersRouter.get("/me", async (req, res) => {
       SELECT id AS guest_id
       FROM guests
       WHERE user_id = $1
+      ORDER BY id ASC
+      LIMIT 1
       `;
     const values = [user.id];
     const {
