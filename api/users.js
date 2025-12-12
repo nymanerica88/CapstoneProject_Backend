@@ -3,6 +3,7 @@ import { createUser, getUserByUsernameAndPassword } from "#db/queries/users";
 import requireBody from "#middleware/requireBody";
 import { createToken } from "#utils/jwt";
 import jwt from "jsonwebtoken";
+import db from "#db/client";
 const { TokenExpiredError } = jwt;
 
 // // import { TokenExpiredError } from "jsonwebtoken";
@@ -43,5 +44,32 @@ usersRouter
     const token = await createToken({ id: user.id });
     res.send(token);
   });
+
+usersRouter.get("/me", async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).send("Not logged in");
+    }
+
+    const guestSql = `
+      SELECT id AS guest_id
+      FROM guests
+      WHERE user_id = $1
+      `;
+    const values = [user.id];
+    const {
+      rows: [guest],
+    } = await db.query(guestSql, values);
+
+    res.json({
+      user,
+      guest_id: guest?.guest_id ?? null,
+    });
+  } catch (error) {
+    console.error("Error in /users/me", error);
+    res.status(500).send("Server error fetching user info");
+  }
+});
 
 export default usersRouter;
