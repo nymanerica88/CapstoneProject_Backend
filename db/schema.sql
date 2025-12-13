@@ -1,9 +1,9 @@
-DROP TABLE IF EXISTS items_on_bills;
+DROP TABLE IF EXISTS itemized_receipt;
 DROP TABLE IF EXISTS split_expenses;
-DROP TABLE IF EXISTS items;
 DROP TABLE IF EXISTS bills;
 DROP TABLE IF EXISTS guests;
 DROP TABLE IF EXISTS users;
+DROP TYPE IF EXISTS bill_type;
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
@@ -16,44 +16,39 @@ CREATE TABLE users (
 
 CREATE TABLE guests (
   id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL references users(id) ON DELETE CASCADE,
-  guest_name TEXT NOT NULL
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  guest_name TEXT NOT NULL,
+  is_user BOOLEAN DEFAULT false
 );
 
 CREATE TYPE bill_type AS ENUM (
   'even',
-  'per item',
+  'per_item',
   'percentage'
 );
 
 CREATE TABLE bills (
   id SERIAL PRIMARY KEY,
-  guest_id INT NOT NULL REFERENCES guests(id),
+  owner_user_id INT NOT NULL REFERENCES users(id),
   ref_num INT NOT NULL,
-  receipt BYTEA,
   type bill_type NOT NULL,
-  total decimal (10,2) NOT NULL,
-  is_paid BOOLEAN
+  total DECIMAL(10,2) NOT NULL,
+  is_paid BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE items (
+CREATE TABLE itemized_receipt (
   id SERIAL PRIMARY KEY,
   bill_id INT NOT NULL REFERENCES bills(id) ON DELETE CASCADE,
   guest_id INT NOT NULL REFERENCES guests(id),
-  name TEXT NOT NULL,
-  quantity INT NOT NULL, 
-  price DECIMAL (10,2) NOT NULL
-);
-
-CREATE TABLE items_on_bills (
-  id SERIAL PRIMARY KEY,
-  bill_id INT NOT NULL REFERENCES bills(id),
-  item_id INT NOT NULL REFERENCES items(id)
+  item_name TEXT not null,
+  quantity INT NOT NULL,
+  price DECIMAL(10,2) NOT NULL
 );
 
 CREATE TABLE split_expenses (
   id SERIAL PRIMARY KEY,
-  bill_id INT NOT NULL REFERENCES bills(id),
+  bill_id INT NOT NULL REFERENCES bills(id) ON DELETE CASCADE,
   guest_id INT NOT NULL REFERENCES guests(id),
   amount_owed DECIMAL (10,2) NOT NULL
 );
