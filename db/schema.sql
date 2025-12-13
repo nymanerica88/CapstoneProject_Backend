@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS itemized_receipt;
 DROP TABLE IF EXISTS split_expenses;
+DROP TABLE IF EXISTS receipt_items;
 DROP TABLE IF EXISTS bills;
 DROP TABLE IF EXISTS guests;
 DROP TABLE IF EXISTS users;
@@ -37,7 +37,7 @@ CREATE TABLE bills (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE itemized_receipt (
+CREATE TABLE receipt_items (
   id SERIAL PRIMARY KEY,
   bill_id INT NOT NULL REFERENCES bills(id) ON DELETE CASCADE,
   guest_id INT NOT NULL REFERENCES guests(id),
