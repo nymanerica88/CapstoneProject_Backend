@@ -24,3 +24,22 @@ export async function createReceiptItem({
     throw error;
   }
 }
+
+export async function getItemsForBill(bill_id) {
+  try {
+    const sql = `
+    SELECT itemized_receipt.item_name, itemized_receipt.quantity, itemized_receipt.price, guests.guest_name
+    FROM itemized_receipt
+    JOIN guests ON guests.id = itemized_receipt.guest_id
+    WHERE itemized_receipt.bill_id = $1
+    ORDER BY itemized_receipt.id    
+    `;
+
+    const values = [bill_id];
+    const { rows: itemsForBill } = await db.query(sql, values);
+    return itemsForBill;
+  } catch (error) {
+    console.error(`Error fetching items for bill ${bill_id}`, error);
+    throw error;
+  }
+}
