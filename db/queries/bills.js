@@ -1,21 +1,20 @@
 import db from "#db/client";
 
 export async function createBill({
-  guest_id,
+  owner_user_id,
   ref_num,
-  receipt = null,
   type,
   total,
   is_paid = false,
 }) {
   try {
     const sql = `
-        INSERT INTO bills (guest_id, ref_num, receipt, type, total, is_paid)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO bills (owner_user_id, ref_num, type, total, is_paid)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *     
         `;
 
-    const values = [guest_id, ref_num, receipt, type, total, is_paid];
+    const values = [owner_user_id, ref_num, type, total, is_paid];
     const {
       rows: [bill],
     } = await db.query(sql, values);
