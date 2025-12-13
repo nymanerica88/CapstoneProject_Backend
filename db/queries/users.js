@@ -22,8 +22,8 @@ export async function createUser({
       rows: [user],
     } = await db.query(sql, values);
     const newGuestSql = `
-    INSERT INTO guests (user_id, guest_name)
-    VALUES ($1, $2)
+    INSERT INTO guests (user_id, guest_name, is_user)
+    VALUES ($1, $2, true)
     RETURNING *
     `;
     const newGuestValues = [user.id, `${first_name} ${last_name}`];
