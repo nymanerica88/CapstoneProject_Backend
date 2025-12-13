@@ -1,28 +1,40 @@
 import express from "express";
+import db from "#db/client";
+import requireUser from "#middleware/requireUser";
+
 import {
   getBillsForGuestProfile,
   getTotalOwedForGuest,
-} from "#db/queries/z_split_expenses";
+} from "#db/queries/split_expenses";
 
 const profileRouter = express.Router();
 
-profileRouter.get("/:guest_id", async (req, res, next) => {
+profileRouter.use(requireUser);
+
+profileRouter.get("/", async (req, res, next) => {
   try {
-    const guest_id = Number(req.params.guest_id);
-    const bills = await getBillsForGuestProfile(guest_id);
-    const totalOwed = await getTotalOwedForGuest(guest_id);
-    if (!bills || bills.length === 0) {
-      return res.status(404).send("Profile not found");
+    const guestSql = `
+    SELECT id
+    FROM guests
+    WHERE user_id = $1
+      AND is_user = true
+    LIMIT 1
+    `;
+
+    const values = [req.user.id];
+    const {
+      rows: [userAsGuest],
+    } = await db.query(guestSql, values);
+    if (!userAsGuest) {
+      return res.status(404).send("User guest profile not found");
     }
-    res.json({
-      bills,
-      total_owed: totalOwed,
-    });
+
+    const bills = await getBillsForGuestProfile(userAsGuest.id);
+    const totalOwed = await getTotalOwedForGuest(userAsGuest.id);
+
+    res.send({ bills, total_owed: totalOwed });
   } catch (error) {
-    console.error(
-      `Error fetching profile for guest ${req.params.guest_id}`,
-      error
-    );
+    console.error("Error fetching profile", error);
     next(error);
   }
 });
