@@ -13,7 +13,33 @@ billsRouter.post("/", requireUser, async (req, res, next) => {
 
   try {
     await db.query("BEGIN");
+    if (!ref_num || typeof total !== "number" || total <= 0) {
+      throw new Error("Valid bill reference number and total are required");
+    }
 
+    if (!Array.isArray(guests) || !guests.length) {
+      throw new Error("At least one guest is required");
+    }
+
+    if (!["even", "per_item", "percentage"].includes(split_type)) {
+      throw new Error("Invalid split type");
+    }
+
+    if (split_type === "per_item") {
+      if (!Array.isArray(items) || items.length === 0) {
+        throw new Error("Items are required for per-item split");
+      }
+    }
+    if (split_type === "percentage") {
+      if (!Array.isArray(percentages) || percentages.length === 0) {
+        throw new Error("Percentages are required for percentage split");
+      }
+      const percentTotal = percentages.reduce((sum, p) => sum + p.percent, 0);
+
+      if (percentTotal !== 1) {
+        throw new Error("Percentages must total 100%");
+      }
+    }
     const bill = await createBill({
       owner_user_id: req.user.id,
       ref_num,
@@ -33,9 +59,6 @@ billsRouter.post("/", requireUser, async (req, res, next) => {
 
     if (split_type === "even") {
       const amount = total / createdGuests.length;
-      if (!createdGuests.length) {
-        throw new Error("At lease one guest is required");
-      }
 
       for (const guest of createdGuests) {
         await createSplitExpense({
@@ -44,9 +67,7 @@ billsRouter.post("/", requireUser, async (req, res, next) => {
           amount_owed: amount,
         });
       }
-    }
-
-    if (split_type === "per_item") {
+    } else if (split_type === "per_item") {
       for (const item of items) {
         await createReceiptItem({
           bill_id: bill.id,
@@ -76,9 +97,7 @@ billsRouter.post("/", requireUser, async (req, res, next) => {
           amount_owed,
         });
       }
-    }
-
-    if (split_type === "percentage") {
+    } else if (split_type === "percentage") {
       for (const entry of percentages) {
         await createSplitExpense({
           bill_id: bill.id,
