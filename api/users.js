@@ -1,6 +1,7 @@
 import express from "express";
 import { createUser, getUserByUsernameAndPassword } from "#db/queries/users";
 import requireBody from "#middleware/requireBody";
+import requireUser from "#middleware/requireUser";
 import { createToken } from "#utils/jwt";
 import jwt from "jsonwebtoken";
 import db from "#db/client";
@@ -42,5 +43,9 @@ usersRouter
     const token = await createToken({ id: user.id });
     res.send(token);
   });
+
+usersRouter.get("/me", requireUser, (req, res) => {
+  res.send(req.user);
+});
 
 export default usersRouter;
