@@ -5,6 +5,7 @@ import getUserFromToken from "#middleware/getUserFromToken";
 import handlePostgresErrors from "#middleware/handlePostgresErrors";
 import usersRouter from "#api/users";
 import profileRouter from "#api/profile";
+import billsRouter from "#api/bills";
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.get("/", (req, res) => res.send("Hello, World!"));
 
 app.use("/users", usersRouter);
 app.use("/profile", profileRouter);
+app.use("/bills", billsRouter);
 
 //ERROR-HANDLING
 app.use(handlePostgresErrors);
