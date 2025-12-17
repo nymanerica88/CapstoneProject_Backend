@@ -14,7 +14,6 @@ import {
 } from "#db/queries/receipt_items";
 import { createSplitExpense } from "#db/queries/split_expenses";
 import { markBillAsPaid } from "#db/queries/bills";
-import { updateReceiptItem } from "#db/queries/receipt_items";
 import { deleteReceiptItem } from "#db/queries/receipt_items";
 
 const billsRouter = express.Router();
