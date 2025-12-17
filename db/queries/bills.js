@@ -83,3 +83,42 @@ export async function getBillItems(bill_id) {
     throw error;
   }
 }
+
+export async function markBillAsPaid(bill_id, user_id) {
+  try {
+    const sql = `
+  UPDATE bills 
+  SET is_paid = true
+  WHERE id = $1 AND owner_user_id = $2
+  RETURNING *
+  `;
+
+    const values = [bill_id, user_id];
+    const {
+      rows: [bill],
+    } = await db.query(sql, values);
+    return bill;
+  } catch (error) {
+    console.error(`Error marking bill as paid`, error);
+    throw error;
+  }
+}
+
+export async function deleteBill(bill_id, user_id) {
+  try {
+    const sql = `
+    DELETE FROM bills
+    WHERE id = $1 AND owner_user_id = $2
+    RETURNING *
+    `;
+
+    const values = [bill_id, user_id];
+    const {
+      rows: [bill],
+    } = await db.query(sql, values);
+    return bill;
+  } catch (error) {
+    console.error(`Error deleting bill`, error);
+    throw error;
+  }
+}
