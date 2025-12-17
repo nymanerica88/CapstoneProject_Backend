@@ -8,9 +8,14 @@ import {
   getBillItems,
 } from "#db/queries/bills";
 import { createGuest } from "#db/queries/guests";
-import { createReceiptItem } from "#db/queries/receipt_items";
+import {
+  createReceiptItem,
+  updateReceiptItem,
+} from "#db/queries/receipt_items";
 import { createSplitExpense } from "#db/queries/split_expenses";
 import { markBillAsPaid } from "#db/queries/bills";
+import { updateReceiptItem } from "#db/queries/receipt_items";
+import { deleteReceiptItem } from "#db/queries/receipt_items";
 
 const billsRouter = express.Router();
 
@@ -148,6 +153,33 @@ billsRouter.patch("/:id/pay", requireUser, async (req, res, next) => {
     }
 
     res.json(bill);
+  } catch (error) {
+    next(error);
+  }
+});
+
+billsRouter.patch("/items/:id", requireUser, async (req, res, next) => {
+  try {
+    const updatedItem = await updateReceiptItem(req.params.id, req.body);
+    if (!updatedItem) {
+      return res.status(404).send("Item not found");
+    }
+
+    res.json(updatedItem);
+  } catch (error) {
+    next(error);
+  }
+});
+
+billsRouter.delete("/items/:id", requireUser, async (req, res, next) => {
+  try {
+    const deletedItem = await deleteReceiptItem(req.params.id);
+
+    if (!deletedItem) {
+      return res.status(404).send("Item not found");
+    }
+
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
