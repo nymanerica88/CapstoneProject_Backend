@@ -28,7 +28,7 @@ export async function createBill({
 export async function getBillById(bill_id, user_id) {
   try {
     const sql = `
-    SELECT bills.id, bills.ref_num, bills.type, bills.total, bills.is_paid, bills.create_at
+    SELECT bills.id, bills.ref_num, bills.type, bills.total, bills.is_paid, bills.created_at
     FROM bills
     WHERE bills.id = $1
     AND bills.owner_user_id = $2
