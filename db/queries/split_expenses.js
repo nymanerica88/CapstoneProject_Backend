@@ -21,7 +21,8 @@ export async function createSplitExpense({ bill_id, guest_id, amount_owed }) {
 export async function getBillsForGuestProfile(guest_id) {
   try {
     const sql = `
-    SELECT 
+    SELECT
+      bills.id AS bill_id, 
       bills.ref_num, 
       split_expenses.amount_owed 
     FROM split_expenses
