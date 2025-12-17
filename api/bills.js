@@ -1,7 +1,12 @@
 import express from "express";
 import db from "#db/client";
 import requireUser from "#middleware/requireUser";
-import { createBill } from "#db/queries/bills";
+import {
+  createBill,
+  getBillById,
+  getBillSplits,
+  getBillItems,
+} from "#db/queries/bills";
 import { createGuest } from "#db/queries/guests";
 import { createReceiptItem } from "#db/queries/receipt_items";
 import { createSplitExpense } from "#db/queries/split_expenses";
@@ -111,6 +116,21 @@ billsRouter.post("/", requireUser, async (req, res, next) => {
     res.status(201).send({ bill, guests: createdGuests });
   } catch (error) {
     await db.query("ROLLBACK");
+    next(error);
+  }
+});
+
+billsRouter.get("/:id", requireUser, async (req, res, next) => {
+  try {
+    const bill = await getBillById(req.params.id, req.user.id);
+    if (!bill) return res.status(404).send("Bill not found");
+
+    const splits = await getBillSplits(bill.id);
+    const items = await getBillItems(bill.id);
+
+    res.json({ bill, splits, items });
+  } catch (error) {
+    console.error(`Error retrieving bill details by id`, error);
     next(error);
   }
 });
