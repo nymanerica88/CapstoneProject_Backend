@@ -10,6 +10,7 @@ import {
 import { createGuest } from "#db/queries/guests";
 import { createReceiptItem } from "#db/queries/receipt_items";
 import { createSplitExpense } from "#db/queries/split_expenses";
+import { markBillAsPaid } from "#db/queries/bills";
 
 const billsRouter = express.Router();
 
@@ -134,6 +135,20 @@ billsRouter.get("/:id", requireUser, async (req, res, next) => {
     res.json({ bill, splits, items });
   } catch (error) {
     console.error(`Error retrieving bill details by id`, error);
+    next(error);
+  }
+});
+
+billsRouter.patch("/:id/pay", requireUser, async (req, res, next) => {
+  try {
+    const bill = await markBillAsPaid(req.params.id, req.user.id);
+
+    if (!bill) {
+      return res.status(404).send("Bill not found");
+    }
+
+    res.json(bill);
+  } catch (error) {
     next(error);
   }
 });
