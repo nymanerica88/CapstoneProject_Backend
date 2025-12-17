@@ -24,10 +24,11 @@ export async function getBillsForGuestProfile(guest_id) {
     SELECT
       bills.id AS bill_id, 
       bills.ref_num, 
-      split_expenses.amount_owed 
-    FROM split_expenses
-    JOIN bills ON split_expenses.bill_id = bills.id
-    WHERE split_expenses.guest_id = $1
+      SUM(split_expenses.amount_owed) as amount_owed
+    FROM bills
+    JOIN split_expenses ON split_expenses.bill_id = bills.id
+    WHERE bills.owner_user_id = $1
+    GROUP BY bills.id
     ORDER BY bills.created_at
     `;
     const values = [guest_id];
