@@ -54,10 +54,13 @@ billsRouter.post("/", requireUser, async (req, res, next) => {
 
     const createdGuests = [];
     for (const guestName of guests) {
+      const isUserGuest =
+        guestName === `${req.user.first_name} ${req.user.last_name}`;
+
       const guest = await createGuest({
-        user_id: null,
+        user_id: isUserGuest ? req.user.id : null,
         guest_name: guestName,
-        is_user: false,
+        is_user: isUserGuest,
       });
       createdGuests.push(guest);
     }
