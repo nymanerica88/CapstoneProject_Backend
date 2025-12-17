@@ -65,7 +65,8 @@ export async function getBillSplits(bill_id) {
 export async function getBillItems(bill_id) {
   try {
     const sql = `
-  SELECT 
+  SELECT
+    receipt_items.id,
     receipt_items.item_name, 
     receipt_items.quantity,
     receipt_items.price,
