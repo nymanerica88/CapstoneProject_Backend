@@ -25,6 +25,26 @@ export async function createBill({
   }
 }
 
+export async function getBillById(bill_id, user_id) {
+  try {
+    const sql = `
+    SELECT bills.id, bills.ref_num, bills.type, bills.total, bills.is_paid, bills.create_at
+    FROM bills
+    WHERE bills.id = $1
+    AND bills.owner_user_id = $2
+    `;
+
+    const values = [bill_id, user_id];
+    const {
+      rows: [bill],
+    } = await db.query(sql, values);
+    return bill;
+  } catch (error) {
+    console.error(`Error retrieving bill by id`, error);
+    throw error;
+  }
+}
+
 export async function getBillSplits(bill_id) {
   try {
     const sql = `
