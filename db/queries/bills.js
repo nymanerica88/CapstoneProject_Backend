@@ -24,3 +24,22 @@ export async function createBill({
     throw error;
   }
 }
+
+export async function getBillSplits(bill_id) {
+  try {
+    const sql = `
+    SELECT guests.id, guests.guest_name, split_expenses.amount_owed
+    FROM split_expenses
+    JOIN guests ON guests.id = split_expenses.guest.id
+    WHERE split_expenses.bill_id = $1
+    `;
+    const values = [bill_id];
+    const {
+      rows: [bill_splits],
+    } = await db.query(sql, values);
+    return bill_splits;
+  } catch (error) {
+    console.error(`Error retrieving bill splits`, error);
+    throw error;
+  }
+}
