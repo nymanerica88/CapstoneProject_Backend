@@ -41,3 +41,25 @@ export async function getBillSplits(bill_id) {
     throw error;
   }
 }
+
+export async function getBillItems(bill_id) {
+  try {
+    const sql = `
+  SELECT 
+    receipt_items.item_name, 
+    receipt_items.quantity,
+    receipt_items.price,
+    guests.guest_name
+  FROM receipt_items
+  JOIN guests ON guests.id = receipt_items.guest_id
+  WHERE receipt_items.bill_id = $1   
+  `;
+
+    const values = [bill_id];
+    const { rows: bill_items } = await db.query(sql, values);
+    return bill_items;
+  } catch (error) {
+    console.error(`Error retrieving bill items`, error);
+    throw error;
+  }
+}
