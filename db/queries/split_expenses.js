@@ -57,3 +57,38 @@ export async function getTotalOwedForGuest(guest_id) {
     throw error;
   }
 }
+
+export async function recalculatePerItemSplits(bill_id) {
+  try {
+    const deleteSql = `
+    DELETE FROM split_expenses
+    WHERE bill_id = $1    
+    `;
+
+    const deleteValues = [bill_id];
+    await db.query(deleteSql, deleteValues);
+
+    const totalsSql = `
+    SELECT guest_id, SUM(quantity*price) AS amount_owed
+    FROM receipt_items
+    WHERE bill_id = $1
+    GROUP BY guest_id
+    `;
+    const totalsValues = [bill_id];
+    const { rows: guestTotals } = await db.query(totalsSql, totalsValues);
+
+    for (const row of guestTotals) {
+      await createSplitExpense({
+        bill_id,
+        guest_id: row.guest_id,
+        amount_owed: row.amount_owed,
+      });
+    }
+  } catch (error) {
+    console.error(
+      `Error recalculating per-item splits for bill ${bill_id}`,
+      error
+    );
+    throw error;
+  }
+}

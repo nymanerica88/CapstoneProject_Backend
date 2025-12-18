@@ -12,7 +12,10 @@ import {
   createReceiptItem,
   updateReceiptItem,
 } from "#db/queries/receipt_items";
-import { createSplitExpense } from "#db/queries/split_expenses";
+import {
+  createSplitExpense,
+  recalculatePerItemSplits,
+} from "#db/queries/split_expenses";
 import { markBillAsPaid } from "#db/queries/bills";
 import { deleteReceiptItem } from "#db/queries/receipt_items";
 
@@ -164,6 +167,8 @@ billsRouter.patch("/items/:id", requireUser, async (req, res, next) => {
       return res.status(404).send("Item not found");
     }
 
+    await recalculatePerItemSplits(updatedItem.bill_id);
+
     res.json(updatedItem);
   } catch (error) {
     next(error);
@@ -177,6 +182,8 @@ billsRouter.delete("/items/:id", requireUser, async (req, res, next) => {
     if (!deletedItem) {
       return res.status(404).send("Item not found");
     }
+
+    await recalculatePerItemSplits(deletedItem.bill_id);
 
     res.sendStatus(204);
   } catch (error) {
